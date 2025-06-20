@@ -1,11 +1,14 @@
 package main
 
-type handler struct {
-	repo *repo
+type storer interface {
 }
 
-func NewHandler(repo *repo) *handler {
+type handler struct {
+	storer storer
+}
+
+func NewHandler(storer storer) *handler {
 	return &handler{
-		repo: repo,
+		storer: storer,
 	}
 }

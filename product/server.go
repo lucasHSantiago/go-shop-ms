@@ -13,12 +13,17 @@ import (
 	"github.com/ardanlabs/conf/v3"
 )
 
-type server struct {
-	handler handler
+type app interface {
 }
 
-func NewServer(handler *handler) *server {
-	return &server{}
+type server struct {
+	app app
+}
+
+func NewServer(app app) *server {
+	return &server{
+		app: app,
+	}
 }
 
 func (s *server) serve(ctx context.Context) error {
