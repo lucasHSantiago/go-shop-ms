@@ -1,0 +1,26 @@
+services:
+  product-db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=product
+    networks:
+      - go-shop
+
+  product:
+    build: ../../product
+    ports:
+      - "5000:5000"
+    depends_on:
+      - product-db
+    networks:
+      - go-shop
+
+volumes:
+  database: {}
+
+networks:
+  go-shop: {}
