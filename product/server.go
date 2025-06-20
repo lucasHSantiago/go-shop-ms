@@ -11,7 +11,15 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf/v3"
+	"github.com/go-chi/chi/v5"
+	"golang.org/x/sync/errgroup"
 )
+
+var interruptSignals = []os.Signal{
+	os.Interrupt,
+	syscall.SIGTERM,
+	syscall.SIGINT,
+}
 
 type app interface {
 }
@@ -27,6 +35,8 @@ func NewServer(app app) *server {
 }
 
 func (s *server) serve(ctx context.Context) error {
+	// -------------------------------------------------------------------------
+	// Load configuration.
 	cfg := struct {
 		Web struct {
 			ReadTimeout     time.Duration `conf:"default:5s"`
@@ -47,6 +57,9 @@ func (s *server) serve(ctx context.Context) error {
 		return fmt.Errorf("parsing config: %w", err)
 	}
 
+	// -------------------------------------------------------------------------
+	// Run server
+
 	srv := &http.Server{
 		Addr:    cfg.Web.APIHost,
 		Handler: s.routes(),
@@ -56,50 +69,61 @@ func (s *server) serve(ctx context.Context) error {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	shutdownError := make(chan error)
+	// -------------------------------------------------------------------------
+	// Capture the interrupt signals so we can gracefully shutdown the server.
 
-	go func() {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		// s := <-quit
+	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
+	defer stop()
 
-		// app.logger.PrintInfo("shutting down server", map[string]string{
-		// 	"signal": s.String(),
-		// })
+	waitGroup, ctx := errgroup.WithContext(ctx)
 
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
+	// -------------------------------------------------------------------------
+	// Start server and listen for shutdown
 
-		err := srv.Shutdown(ctx)
+	waitGroup.Go(func() error {
+		// log.Info().Msgf("start gateway server at %s", cfg.Web.APIHost)
+		err = srv.ListenAndServe()
 		if err != nil {
-			shutdownError <- err
+			if errors.Is(err, http.ErrServerClosed) {
+				return nil
+			}
+
+			// log.Fatal().Err(err).Msg("gateway server failed to serve")
+			return err
 		}
 
-		// app.logger.PrintInfo("completing background tasks", map[string]string{
-		// 	"addr": srv.Addr,
-		// })
+		return nil
+	})
 
-		shutdownError <- nil
-	}()
+	// -------------------------------------------------------------------------
+	// Gracefully shutdown the server when the context is done.
 
-	// app.logger.PrintInfo("starting %s server on %s", map[string]string{
-	// 	"addr": srv.Addr,
-	// 	"env":  app.config.env,
-	// })
+	waitGroup.Go(func() error {
+		<-ctx.Done()
+		// log.Info().Msg("graceful shutdown gateway server")
+		srv.Shutdown(context.Background())
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			// log.Error().Err(err).Msg("failed to shutdown gateway server")
+			return err
+		}
 
-	err = srv.ListenAndServe()
-	if !errors.Is(err, http.ErrServerClosed) {
-		return err
-	}
+		// log.Info().Msg("HTTP gateway server was stopped")
+		return nil
+	})
 
-	err = <-shutdownError
+	// -------------------------------------------------------------------------
+	// Wait for the server to finish serving or shutdown.
+
+	err = waitGroup.Wait()
 	if err != nil {
-		return err
+		// log.Fatal().Err(err).Msg("error from wait group")
 	}
-
-	// app.logger.PrintInfo("stopped server", map[string]string{
-	// 	"addr": srv.Addr,
-	// })
 
 	return nil
+}
+
+func (s *server) routes() http.Handler {
+	r := chi.NewRouter()
+
+	return r
 }
