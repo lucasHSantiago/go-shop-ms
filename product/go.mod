@@ -5,12 +5,12 @@ go 1.24.4
 require (
 	github.com/ardanlabs/conf/v3 v3.8.0
 	github.com/go-chi/chi/v5 v5.2.2
-	github.com/lucasHSantiago/go-shop-ms/logger v0.0.0-00010101000000-000000000000
+	github.com/lucasHSantiago/go-shop-ms/foundation v0.0.0-00010101000000-000000000000
 	github.com/rs/zerolog v1.34.0
 	golang.org/x/sync v0.15.0
 )
 
-replace github.com/lucasHSantiago/go-shop-ms/logger => ../logger
+replace github.com/lucasHSantiago/go-shop-ms/foundation => ../foundation
 
 require (
 	github.com/mattn/go-colorable v0.1.13 // indirect

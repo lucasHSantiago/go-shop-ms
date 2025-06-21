@@ -1,4 +1,4 @@
-module github.com/lucasHSantiago/go-shop-ms/logger
+module github.com/lucasHSantiago/go-shop-ms/foundation
 
 go 1.24.4
 

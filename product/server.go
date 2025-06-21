@@ -12,7 +12,7 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/go-chi/chi/v5"
-	"github.com/lucasHSantiago/go-shop-ms/logger"
+	"github.com/lucasHSantiago/go-shop-ms/foundation/logger"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
