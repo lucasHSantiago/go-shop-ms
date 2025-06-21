@@ -12,6 +12,8 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/go-chi/chi/v5"
+	"github.com/lucasHSantiago/go-shop-ms/logger"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -61,9 +63,9 @@ func (s *server) serve(ctx context.Context) error {
 	// Run server
 
 	srv := &http.Server{
-		Addr:    cfg.Web.APIHost,
-		Handler: s.routes(),
-		// ErrorLog:     log.New(app.logger, "", 0),
+		Addr:         cfg.Web.APIHost,
+		Handler:      s.routes(),
+		ErrorLog:     logger.NewStdLogger(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -81,14 +83,14 @@ func (s *server) serve(ctx context.Context) error {
 	// Start server and listen for shutdown
 
 	waitGroup.Go(func() error {
-		// log.Info().Msgf("start gateway server at %s", cfg.Web.APIHost)
+		log.Info().Msgf("start product service at %s", cfg.Web.APIHost)
 		err = srv.ListenAndServe()
 		if err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				return nil
 			}
 
-			// log.Fatal().Err(err).Msg("gateway server failed to serve")
+			log.Fatal().Err(err).Msg("product service failed to serve")
 			return err
 		}
 
@@ -100,14 +102,14 @@ func (s *server) serve(ctx context.Context) error {
 
 	waitGroup.Go(func() error {
 		<-ctx.Done()
-		// log.Info().Msg("graceful shutdown gateway server")
+		log.Info().Msg("graceful shutdown product service")
 		srv.Shutdown(context.Background())
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			// log.Error().Err(err).Msg("failed to shutdown gateway server")
+			log.Error().Err(err).Msg("failed to shutdown product service")
 			return err
 		}
 
-		// log.Info().Msg("HTTP gateway server was stopped")
+		log.Info().Msg("HTTP product service was stopped")
 		return nil
 	})
 
@@ -116,7 +118,7 @@ func (s *server) serve(ctx context.Context) error {
 
 	err = waitGroup.Wait()
 	if err != nil {
-		// log.Fatal().Err(err).Msg("error from wait group")
+		log.Fatal().Err(err).Msg("error from wait group")
 	}
 
 	return nil

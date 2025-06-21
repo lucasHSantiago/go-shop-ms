@@ -4,7 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
+
+var build = "develop"
 
 func main() {
 	ctx := context.Background()
@@ -15,13 +20,26 @@ func main() {
 }
 
 func run(ctx context.Context) error {
+	// -------------------------------------------------------------------------
+	// Config logger
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+
+	if build == "develop" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
+	// -------------------------------------------------------------------------
+	// Instantiate the repository, handler, and server.
 	repo := NewRepo()
 	hdlr := NewHandler(repo)
 	srv := NewServer(hdlr)
 
+	// -------------------------------------------------------------------------
+	// Start the server.
 	err := srv.serve(ctx)
 	if err != nil {
-		return fmt.Errorf("cannot run server: %w", err)
+		log.Error().Err(err).Msg("cannot run server")
+		return err
 	}
 
 	return nil
