@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	v1 "github.com/lucasHSantiago/go-shop-ms/product/internal/handler/v1"
+	"github.com/lucasHSantiago/go-shop-ms/product/internal/server"
+	"github.com/lucasHSantiago/go-shop-ms/product/internal/store"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -32,14 +35,14 @@ func run(ctx context.Context) error {
 	// -------------------------------------------------------------------------
 	// Instantiate the repository, handler, and server.
 
-	repo := NewRepo()
-	hdlr := NewHandler(repo)
-	srv := NewServer(hdlr)
+	store := store.NewStore()
+	v1 := v1.NewHandler(store)
+	srv := server.NewServer(v1)
 
 	// -------------------------------------------------------------------------
 	// Start the server.
 
-	err := srv.serve(ctx)
+	err := srv.Serve(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("cannot run server")
 		return err

@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -23,21 +23,21 @@ var interruptSignals = []os.Signal{
 	syscall.SIGINT,
 }
 
-type app interface {
+type App interface {
 	Create(w http.ResponseWriter, r *http.Request)
 }
 
-type server struct {
-	app app
+type Server struct {
+	app App
 }
 
-func NewServer(app app) *server {
-	return &server{
+func NewServer(app App) *Server {
+	return &Server{
 		app: app,
 	}
 }
 
-func (s *server) serve(ctx context.Context) error {
+func (s *Server) Serve(ctx context.Context) error {
 	// -------------------------------------------------------------------------
 	// Load configuration.
 
@@ -126,7 +126,7 @@ func (s *server) serve(ctx context.Context) error {
 	return nil
 }
 
-func (s *server) routes() http.Handler {
+func (s *Server) routes() http.Handler {
 	r := chi.NewRouter()
 
 	r.Route("/v1/product", func(r chi.Router) {

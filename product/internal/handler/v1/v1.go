@@ -1,36 +1,28 @@
-package main
+package v1
 
 import (
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
 	"github.com/lucasHSantiago/go-shop-ms/foundation/request"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/response"
 )
 
-type storer interface {
+type Storer interface {
 }
 
-type handler struct {
-	storer storer
+type Handler struct {
+	storer Storer
 }
 
-func NewHandler(storer storer) *handler {
-	return &handler{
+func NewHandler(storer Storer) *Handler {
+	return &Handler{
 		storer: storer,
 	}
 }
 
-type NewProduct struct {
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Price       float64   `json:"price"`
-	Category_id uuid.UUID `json:"category_id"`
-}
-
-func (h *handler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var np NewProduct
 	if err := request.Decode(r, &np); err != nil {
 		log.Error().Err(err).Msg("failed to decode request")
