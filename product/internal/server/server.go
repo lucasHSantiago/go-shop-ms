@@ -3,16 +3,14 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/ardanlabs/conf/v3"
 	"github.com/go-chi/chi/v5"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/logger"
+	"github.com/lucasHSantiago/go-shop-ms/product/internal/config"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
@@ -37,30 +35,7 @@ func NewServer(app App) *Server {
 	}
 }
 
-func (s *Server) Serve(ctx context.Context) error {
-	// -------------------------------------------------------------------------
-	// Load configuration.
-
-	cfg := struct {
-		Web struct {
-			ReadTimeout     time.Duration `conf:"default:5s"`
-			WriteTimeout    time.Duration `conf:"default:10s"`
-			IdleTimeout     time.Duration `conf:"default:120s"`
-			ShutdownTimeout time.Duration `conf:"default:20s"`
-			APIHost         string        `conf:"default:0.0.0.0:5000"`
-		}
-	}{}
-
-	const prefix = "PRODUCT"
-	help, err := conf.Parse(prefix, &cfg)
-	if err != nil {
-		if errors.Is(err, conf.ErrHelpWanted) {
-			fmt.Println(help)
-			return nil
-		}
-		return fmt.Errorf("parsing config: %w", err)
-	}
-
+func (s *Server) Serve(ctx context.Context, cfg config.Config) error {
 	// -------------------------------------------------------------------------
 	// Run server
 
@@ -68,15 +43,15 @@ func (s *Server) Serve(ctx context.Context) error {
 		Addr:         cfg.Web.APIHost,
 		Handler:      s.routes(),
 		ErrorLog:     logger.NewStdLogger(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  cfg.Web.IdleTimeout,
+		ReadTimeout:  cfg.Web.ReadTimeout,
+		WriteTimeout: cfg.Web.WriteTimeout,
 	}
 
 	// -------------------------------------------------------------------------
 	// Capture the interrupt signals so we can gracefully shutdown the server.
 
-	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
+	ctx, stop := signal.NotifyContext(ctx, interruptSignals...)
 	defer stop()
 
 	waitGroup, ctx := errgroup.WithContext(ctx)
@@ -86,7 +61,7 @@ func (s *Server) Serve(ctx context.Context) error {
 
 	waitGroup.Go(func() error {
 		log.Info().Msgf("start product service at %s", cfg.Web.APIHost)
-		err = srv.ListenAndServe()
+		err := srv.ListenAndServe()
 		if err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				return nil
@@ -105,7 +80,11 @@ func (s *Server) Serve(ctx context.Context) error {
 	waitGroup.Go(func() error {
 		<-ctx.Done()
 		log.Info().Msg("graceful shutdown product service")
-		srv.Shutdown(context.Background())
+
+		ctx, cancel := context.WithTimeout(ctx, cfg.Web.ShutdownTimeout)
+		defer cancel()
+
+		err := srv.Shutdown(ctx)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error().Err(err).Msg("failed to shutdown product service")
 			return err
@@ -118,7 +97,7 @@ func (s *Server) Serve(ctx context.Context) error {
 	// -------------------------------------------------------------------------
 	// Wait for the server to finish serving or shutdown.
 
-	err = waitGroup.Wait()
+	err := waitGroup.Wait()
 	if err != nil {
 		log.Fatal().Err(err).Msg("error from wait group")
 	}
