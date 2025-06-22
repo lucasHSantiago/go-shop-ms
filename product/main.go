@@ -22,6 +22,7 @@ func main() {
 func run(ctx context.Context) error {
 	// -------------------------------------------------------------------------
 	// Config logger
+
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	if build == "develop" {
@@ -30,12 +31,14 @@ func run(ctx context.Context) error {
 
 	// -------------------------------------------------------------------------
 	// Instantiate the repository, handler, and server.
+
 	repo := NewRepo()
 	hdlr := NewHandler(repo)
 	srv := NewServer(hdlr)
 
 	// -------------------------------------------------------------------------
 	// Start the server.
+
 	err := srv.serve(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("cannot run server")

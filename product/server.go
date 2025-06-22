@@ -24,6 +24,7 @@ var interruptSignals = []os.Signal{
 }
 
 type app interface {
+	Create(w http.ResponseWriter, r *http.Request)
 }
 
 type server struct {
@@ -39,13 +40,14 @@ func NewServer(app app) *server {
 func (s *server) serve(ctx context.Context) error {
 	// -------------------------------------------------------------------------
 	// Load configuration.
+
 	cfg := struct {
 		Web struct {
 			ReadTimeout     time.Duration `conf:"default:5s"`
 			WriteTimeout    time.Duration `conf:"default:10s"`
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
-			APIHost         string        `conf:"default:0.0.0.0:3000"`
+			APIHost         string        `conf:"default:0.0.0.0:5000"`
 		}
 	}{}
 
@@ -126,6 +128,10 @@ func (s *server) serve(ctx context.Context) error {
 
 func (s *server) routes() http.Handler {
 	r := chi.NewRouter()
+
+	r.Route("/v1/product", func(r chi.Router) {
+		r.Post("/", s.app.Create)
+	})
 
 	return r
 }
