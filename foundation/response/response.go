@@ -26,3 +26,7 @@ func Respond(w http.ResponseWriter, data any, statusCode int) error {
 
 	return nil
 }
+
+func BadRequest(w http.ResponseWriter, err error) error {
+	return Respond(w, map[string]any{"error": err}, http.StatusBadRequest)
+}
