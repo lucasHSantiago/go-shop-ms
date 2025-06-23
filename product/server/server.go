@@ -8,9 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/logger"
-	"github.com/lucasHSantiago/go-shop-ms/product/internal/config"
+	"github.com/lucasHSantiago/go-shop-ms/product/config"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
@@ -21,17 +20,17 @@ var interruptSignals = []os.Signal{
 	syscall.SIGINT,
 }
 
-type App interface {
+type ProductHdlr interface {
 	Create(w http.ResponseWriter, r *http.Request)
 }
 
 type Server struct {
-	app App
+	prdHdlr ProductHdlr
 }
 
-func NewServer(app App) *Server {
+func NewServer(prdHdlr ProductHdlr) *Server {
 	return &Server{
-		app: app,
+		prdHdlr: prdHdlr,
 	}
 }
 
@@ -103,14 +102,4 @@ func (s *Server) Serve(ctx context.Context, cfg config.Config) error {
 	}
 
 	return nil
-}
-
-func (s *Server) routes() http.Handler {
-	r := chi.NewRouter()
-
-	r.Route("/v1/product", func(r chi.Router) {
-		r.Post("/", s.app.Create)
-	})
-
-	return r
 }

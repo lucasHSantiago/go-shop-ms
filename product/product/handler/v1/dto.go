@@ -3,7 +3,7 @@ package v1
 import (
 	"github.com/google/uuid"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/validate"
-	"github.com/lucasHSantiago/go-shop-ms/product/internal/store"
+	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
 )
 
 type NewProduct struct {

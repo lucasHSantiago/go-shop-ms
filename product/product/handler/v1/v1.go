@@ -4,12 +4,11 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
 	"github.com/lucasHSantiago/go-shop-ms/foundation/request"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/response"
-	"github.com/lucasHSantiago/go-shop-ms/product/internal/store"
+	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
 )
 
 type Storer interface {
@@ -34,11 +33,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if np.Category_id == uuid.Nil {
-		log.Error().Msg("category_id cannot be empty")
-		response.RequestError(w, "category_id cannot be empty", http.StatusBadRequest)
-		return
-	}
+	// TODO: validate if category_id exists in the database
 
 	prd, err := h.storer.Create(r.Context(), toDBProduct(np))
 	if err != nil {
