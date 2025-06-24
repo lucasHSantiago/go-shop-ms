@@ -1,10 +1,10 @@
-package service
+package product
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
 )
 
 type Product struct {
@@ -23,11 +23,6 @@ type NewProduct struct {
 	Category_id uuid.UUID
 }
 
-func (np NewProduct) toDBProduct() store.Product {
-	return store.Product{
-		Name:        np.Name,
-		Description: np.Description,
-		Price:       np.Price,
-		Category_id: np.Category_id,
-	}
+type UseCase interface {
+	Create(ctx context.Context, prd NewProduct) (Product, error)
 }

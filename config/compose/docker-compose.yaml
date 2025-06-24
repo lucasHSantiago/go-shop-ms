@@ -9,6 +9,8 @@ services:
       - POSTGRES_DB=product
     networks:
       - go-shop
+    volume:
+      - database:/var/lib/postgresql/data
 
   product:
     build: ../../product

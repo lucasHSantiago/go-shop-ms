@@ -7,10 +7,10 @@ import (
 
 	"github.com/lucasHSantiago/go-shop-ms/foundation/db"
 	"github.com/lucasHSantiago/go-shop-ms/product/config"
-	v1 "github.com/lucasHSantiago/go-shop-ms/product/product/handler/v1"
-	"github.com/lucasHSantiago/go-shop-ms/product/product/service"
-	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
-	"github.com/lucasHSantiago/go-shop-ms/product/server"
+	"github.com/lucasHSantiago/go-shop-ms/product/internal/api"
+	"github.com/lucasHSantiago/go-shop-ms/product/internal/http/handler"
+	"github.com/lucasHSantiago/go-shop-ms/product/product"
+	"github.com/lucasHSantiago/go-shop-ms/product/product/postgres"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -76,15 +76,14 @@ func run(ctx context.Context) error {
 	// -------------------------------------------------------------------------
 	// Instantiate the repository, handler, service, and server.
 
-	store := store.NewStore(dbConn)
-	service := service.NewService(store)
-	v1 := v1.NewHandler(service)
-	srv := server.NewServer(v1)
+	store := postgres.NewStore(dbConn)
+	service := product.NewService(store)
+	handler := handler.NewHandler(service)
 
 	// -------------------------------------------------------------------------
 	// Start the server.
 
-	err = srv.Serve(ctx, cfg)
+	err = api.Serve(ctx, handler, cfg)
 	if err != nil {
 		log.Error().Err(err).Msg("cannot run server")
 		return fmt.Errorf("cannot run server: %w", err)

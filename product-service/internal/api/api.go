@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -20,27 +20,13 @@ var interruptSignals = []os.Signal{
 	syscall.SIGINT,
 }
 
-type ProductHdlr interface {
-	Create(w http.ResponseWriter, r *http.Request)
-}
-
-type Server struct {
-	prdHdlr ProductHdlr
-}
-
-func NewServer(prdHdlr ProductHdlr) *Server {
-	return &Server{
-		prdHdlr: prdHdlr,
-	}
-}
-
-func (s *Server) Serve(ctx context.Context, cfg config.Config) error {
+func Serve(ctx context.Context, hdl http.Handler, cfg config.Config) error {
 	// -------------------------------------------------------------------------
 	// Run server
 
 	srv := &http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      s.routes(),
+		Handler:      hdl,
 		ErrorLog:     logger.NewStdLogger(),
 		IdleTimeout:  cfg.Web.IdleTimeout,
 		ReadTimeout:  cfg.Web.ReadTimeout,

@@ -1,14 +1,12 @@
-package service
+package product
 
 import (
 	"context"
 	"fmt"
-
-	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
 )
 
 type Storer interface {
-	Create(ctx context.Context, prd store.Product) (store.Product, error)
+	Create(ctx context.Context, np NewProduct) (*Product, error)
 }
 
 type Service struct {
@@ -24,7 +22,7 @@ func NewService(s Storer) *Service {
 func (s *Service) Create(ctx context.Context, np NewProduct) (Product, error) {
 	// TODO: validate if category_id exists in the database
 
-	prd, err := s.storer.Create(ctx, np.toDBProduct())
+	prd, err := s.storer.Create(ctx, np)
 	if err != nil {
 		return Product{}, fmt.Errorf("failed to create product: %w", err)
 	}
