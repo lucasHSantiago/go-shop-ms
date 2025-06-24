@@ -8,34 +8,39 @@ import (
 
 	"github.com/lucasHSantiago/go-shop-ms/foundation/request"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/response"
-	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
+	"github.com/lucasHSantiago/go-shop-ms/product/product/service"
 )
 
-type Storer interface {
-	Create(ctx context.Context, prd store.Product) (store.Product, error)
+type Service interface {
+	Create(ctx context.Context, prd service.NewProduct) (service.Product, error)
 }
 
 type Handler struct {
-	storer Storer
+	service Service
 }
 
-func NewHandler(storer Storer) *Handler {
+func NewHandler(s Service) *Handler {
 	return &Handler{
-		storer: storer,
+		service: s,
 	}
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var np NewProduct
-	if err := request.Decode(r, &np); err != nil {
+	var dto NewProduct
+	if err := request.Decode(r, &dto); err != nil {
 		log.Error().Err(err).Msg("failed to decode request")
 		response.BadRequest(w, err)
 		return
 	}
 
-	// TODO: validate if category_id exists in the database
+	np := service.NewProduct{
+		Name:        dto.Name,
+		Description: dto.Description,
+		Price:       dto.Price,
+		Category_id: dto.Category_id,
+	}
 
-	prd, err := h.storer.Create(r.Context(), toDBProduct(np))
+	prd, err := h.service.Create(r.Context(), np)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create product")
 		response.InternalServerError(w, err)

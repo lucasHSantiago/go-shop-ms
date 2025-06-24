@@ -3,7 +3,6 @@ package v1
 import (
 	"github.com/google/uuid"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/validate"
-	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
 )
 
 type NewProduct struct {
@@ -19,13 +18,4 @@ func (app NewProduct) Validate() error {
 	}
 
 	return nil
-}
-
-func toDBProduct(app NewProduct) store.Product {
-	return store.Product{
-		Name:        app.Name,
-		Description: app.Description,
-		Price:       app.Price,
-		Category_id: app.Category_id,
-	}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/lucasHSantiago/go-shop-ms/foundation/db"
 	"github.com/lucasHSantiago/go-shop-ms/product/config"
 	v1 "github.com/lucasHSantiago/go-shop-ms/product/product/handler/v1"
+	"github.com/lucasHSantiago/go-shop-ms/product/product/service"
 	"github.com/lucasHSantiago/go-shop-ms/product/product/store"
 	"github.com/lucasHSantiago/go-shop-ms/product/server"
 	"github.com/rs/zerolog"
@@ -73,10 +74,11 @@ func run(ctx context.Context) error {
 	}
 
 	// -------------------------------------------------------------------------
-	// Instantiate the repository, handler, and server.
+	// Instantiate the repository, handler, service, and server.
 
 	store := store.NewStore(dbConn)
-	v1 := v1.NewHandler(store)
+	service := service.NewService(store)
+	v1 := v1.NewHandler(service)
 	srv := server.NewServer(v1)
 
 	// -------------------------------------------------------------------------
