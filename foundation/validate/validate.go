@@ -9,6 +9,7 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
+	"github.com/lucasHSantiago/go-shop-ms/foundation/cerr"
 )
 
 // validate holds the settings and caches for validating request struct values.
@@ -48,9 +49,9 @@ func Check(val any) error {
 			return err
 		}
 
-		var fields FieldErrors
+		var fields cerr.FieldErrors
 		for _, verror := range verrors {
-			field := FieldError{
+			field := cerr.FieldError{
 				Field: verror.Field(),
 				Err:   verror.Translate(translator),
 			}
