@@ -12,3 +12,11 @@ migratedown:
 .PHONY: new_migration
 new_migration:
 	migrate create -ext sql -dir migrate -seq $(name)
+
+
+# ==============================================================================
+# Run
+
+.PHONY: run
+run:
+	go run ./...

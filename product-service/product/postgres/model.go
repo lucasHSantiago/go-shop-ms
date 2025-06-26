@@ -1,16 +1,62 @@
 package postgres
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lucasHSantiago/go-shop-ms/foundation/db"
+	"github.com/lucasHSantiago/go-shop-ms/product/product"
 )
 
-type Product struct {
+type productDb struct {
 	ID          uuid.UUID `db:"id"`
 	Name        string    `db:"name"`
 	Description string    `db:"description"`
 	Price       float64   `db:"price"`
 	Category_id uuid.UUID `db:"category_id"`
 	Created_at  time.Time `db:"created_at"`
+}
+
+func toProduct(prd productDb) *product.Product {
+	return &product.Product{
+		ID:          prd.ID,
+		Name:        prd.Name,
+		Description: prd.Description,
+		Price:       prd.Price,
+		CategoryId:  prd.Category_id,
+		Created_at:  prd.Created_at,
+	}
+}
+
+func toDbProducts(prds []productDb) []*product.Product {
+	products := make([]*product.Product, len(prds))
+	for i, prd := range prds {
+		products[i] = toProduct(prd)
+	}
+	return products
+}
+
+type pageDb struct {
+	Offset      int `db:"offset"`
+	RowsPerPage int `db:"rows_per_page"`
+}
+
+type filterDb struct {
+	pageDb
+	Name       sql.NullString  `db:"name"`
+	Price      sql.NullFloat64 `db:"price"`
+	CategoryId db.NullUUID     `db:"category_id"`
+}
+
+func toFilterDb(f product.Filter, pageNumber int, rowsPerPage int) filterDb {
+	return filterDb{
+		pageDb: pageDb{
+			Offset:      (pageNumber - 1) * rowsPerPage,
+			RowsPerPage: rowsPerPage,
+		},
+		Name:       db.StringToText(f.Name),
+		Price:      db.Float64ToFloat8(f.Price),
+		CategoryId: db.UUIDToUUID(f.CategoryId),
+	}
 }

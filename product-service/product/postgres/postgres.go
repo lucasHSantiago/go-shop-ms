@@ -7,6 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/db"
 	"github.com/lucasHSantiago/go-shop-ms/product/product"
+	"github.com/rs/zerolog/log"
 )
 
 type Store struct {
@@ -26,7 +27,7 @@ func (s *Store) Create(ctx context.Context, np product.NewProduct) (*product.Pro
 	RETURNING id, name, description, price, category_id, created_at
 	`
 
-	var dest Product
+	var dest productDb
 	if err := db.NamedQueryStruct(ctx, s.db, query, &np, &dest); err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
@@ -34,13 +35,22 @@ func (s *Store) Create(ctx context.Context, np product.NewProduct) (*product.Pro
 	return toProduct(dest), nil
 }
 
-func toProduct(prd Product) *product.Product {
-	return &product.Product{
-		ID:          prd.ID,
-		Name:        prd.Name,
-		Description: prd.Description,
-		Price:       prd.Price,
-		Category_id: prd.Category_id,
-		Created_at:  prd.Created_at,
+func (s *Store) GetAll(ctx context.Context, filter product.Filter, pageNumber int, rowsPerPage int) ([]*product.Product, error) {
+	const query string = `
+	SELECT id, name, description, price, category_id, created_at
+	FROM products
+	WHERE (name ILIKE COALESCE('%' || :name || '%', name))
+	  AND (price = COALESCE(:price, price))
+	  AND (category_id = COALESCE(:category_id, category_id))
+	ORDER BY created_at DESC
+	OFFSET :offset ROWS FETCH NEXT :rows_per_page ROWS ONLY
+	`
+
+	var dbPrds []productDb
+	if err := db.NamedQuerySlice(ctx, s.db, query, toFilterDb(filter, pageNumber, rowsPerPage), &dbPrds); err != nil {
+		log.Error().Err(err).Msg("failed to get products from the database")
+		return nil, fmt.Errorf("failed to get products in the data base: %w", err)
 	}
+
+	return toDbProducts(dbPrds), nil
 }

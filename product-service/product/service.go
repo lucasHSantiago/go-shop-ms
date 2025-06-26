@@ -3,10 +3,13 @@ package product
 import (
 	"context"
 	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Storer interface {
 	Create(ctx context.Context, np NewProduct) (*Product, error)
+	GetAll(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error)
 }
 
 type Service struct {
@@ -19,20 +22,30 @@ func NewService(s Storer) *Service {
 	}
 }
 
-func (s *Service) Create(ctx context.Context, np NewProduct) (Product, error) {
+func (s *Service) Create(ctx context.Context, np NewProduct) (*Product, error) {
 	// TODO: validate if category_id exists in the database
 
 	prd, err := s.storer.Create(ctx, np)
 	if err != nil {
-		return Product{}, fmt.Errorf("failed to create product: %w", err)
+		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
 
-	return Product{
+	return &Product{
 		ID:          prd.ID,
 		Name:        prd.Name,
 		Description: prd.Description,
 		Price:       prd.Price,
-		Category_id: prd.Category_id,
+		CategoryId:  prd.CategoryId,
 		Created_at:  prd.Created_at,
 	}, nil
+}
+
+func (s *Service) GetAll(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error) {
+	pp, err := s.storer.GetAll(ctx, filter, pageNumber, rowsPerPage)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get products from the database")
+		return nil, fmt.Errorf("failed to get products: %w", err)
+	}
+
+	return pp, nil
 }
