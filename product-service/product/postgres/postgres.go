@@ -35,7 +35,7 @@ func (s *Store) Create(ctx context.Context, nn []product.NewProduct) ([]*product
 	return toProducts(dest), nil
 }
 
-func (s *Store) GetAll(ctx context.Context, filter product.Filter, pageNumber int, rowsPerPage int) ([]*product.Product, error) {
+func (s *Store) Get(ctx context.Context, filter product.Filter, pageNumber int, rowsPerPage int) ([]*product.Product, error) {
 	const query string = `
 	SELECT id, name, description, price, category_id, created_at
 	FROM products

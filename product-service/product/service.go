@@ -9,7 +9,7 @@ import (
 
 type Storer interface {
 	Create(ctx context.Context, np []NewProduct) ([]*Product, error)
-	GetAll(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error)
+	Get(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error)
 }
 
 type Service struct {
@@ -33,8 +33,8 @@ func (s *Service) Create(ctx context.Context, nn []NewProduct) ([]*Product, erro
 	return pp, nil
 }
 
-func (s *Service) GetAll(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error) {
-	pp, err := s.storer.GetAll(ctx, filter, pageNumber, rowsPerPage)
+func (s *Service) Get(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error) {
+	pp, err := s.storer.Get(ctx, filter, pageNumber, rowsPerPage)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get products from the database")
 		return nil, fmt.Errorf("failed to get products: %w", err)

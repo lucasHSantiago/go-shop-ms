@@ -50,7 +50,7 @@ func GetAll(s product.UseCase) http.HandlerFunc {
 			return
 		}
 
-		prds, err := s.GetAll(r.Context(), filter.toProductFilter(), page.Number, page.RowsPerPage)
+		prds, err := s.Get(r.Context(), filter.toProductFilter(), page.Number, page.RowsPerPage)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get products")
 			response.InternalServerError(w, err)
