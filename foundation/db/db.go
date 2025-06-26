@@ -279,7 +279,7 @@ func queryString(query string, args any) string {
 		case []byte:
 			value = fmt.Sprintf("'%s'", string(v))
 		default:
-			value = fmt.Sprintf("%v", v)
+			value = fmt.Sprintf("%#v", v)
 		}
 		query = strings.Replace(query, "?", value, 1)
 	}
