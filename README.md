@@ -3,5 +3,5 @@ A microservice driven e-commerce written in Go
 
 
 # TODO:
-[ ] Middleware logger with trace id for requests
-[ ] Implement db tests
+- [ ] Middleware logger with trace id for requests
+- [ ] Implement db tests

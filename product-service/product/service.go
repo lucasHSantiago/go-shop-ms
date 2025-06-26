@@ -8,7 +8,7 @@ import (
 )
 
 type Storer interface {
-	Create(ctx context.Context, np NewProduct) (*Product, error)
+	Create(ctx context.Context, np []NewProduct) ([]*Product, error)
 	GetAll(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error)
 }
 
@@ -22,22 +22,15 @@ func NewService(s Storer) *Service {
 	}
 }
 
-func (s *Service) Create(ctx context.Context, np NewProduct) (*Product, error) {
+func (s *Service) Create(ctx context.Context, nn []NewProduct) ([]*Product, error) {
 	// TODO: validate if category_id exists in the database
 
-	prd, err := s.storer.Create(ctx, np)
+	pp, err := s.storer.Create(ctx, nn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
 
-	return &Product{
-		ID:          prd.ID,
-		Name:        prd.Name,
-		Description: prd.Description,
-		Price:       prd.Price,
-		CategoryId:  prd.CategoryId,
-		Created_at:  prd.Created_at,
-	}, nil
+	return pp, nil
 }
 
 func (s *Service) GetAll(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error) {

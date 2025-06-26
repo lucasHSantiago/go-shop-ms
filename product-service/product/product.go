@@ -37,6 +37,6 @@ var ErrNotFound = errors.New("product not found")
 
 // UseCase defines the interface for product use cases.
 type UseCase interface {
-	Create(ctx context.Context, prd NewProduct) (*Product, error)
+	Create(ctx context.Context, nn []NewProduct) ([]*Product, error)
 	GetAll(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error)
 }

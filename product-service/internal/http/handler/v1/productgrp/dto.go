@@ -13,12 +13,31 @@ type NewProduct struct {
 	Category_id uuid.UUID `json:"category_id" validate:"required,uuid4"`
 }
 
+type NewProducts []NewProduct
+
 func (np NewProduct) Validate() error {
 	if err := validate.Check(np); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (np NewProduct) toNewProduct() product.NewProduct {
+	return product.NewProduct{
+		Name:        np.Name,
+		Description: np.Description,
+		Price:       np.Price,
+		Category_id: np.Category_id,
+	}
+}
+
+func (nps NewProducts) toNewProducts() []product.NewProduct {
+	nn := make([]product.NewProduct, len(nps))
+	for i, np := range nps {
+		nn[i] = np.toNewProduct()
+	}
+	return nn
 }
 
 type Filter struct {

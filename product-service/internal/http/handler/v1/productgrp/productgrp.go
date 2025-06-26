@@ -11,21 +11,14 @@ import (
 
 func Create(s product.UseCase) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var dto NewProduct
+		var dto NewProducts
 		if err := request.Decode(r, &dto); err != nil {
 			log.Error().Err(err).Msg("failed to decode request")
 			response.BadRequest(w, err)
 			return
 		}
 
-		np := product.NewProduct{
-			Name:        dto.Name,
-			Description: dto.Description,
-			Price:       dto.Price,
-			Category_id: dto.Category_id,
-		}
-
-		prd, err := s.Create(r.Context(), np)
+		prd, err := s.Create(r.Context(), dto.toNewProducts())
 		if err != nil {
 			log.Error().Err(err).Msg("failed to create product")
 			response.InternalServerError(w, err)

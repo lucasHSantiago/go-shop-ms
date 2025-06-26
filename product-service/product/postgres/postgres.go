@@ -20,19 +20,19 @@ func NewStore(db *sqlx.DB) *Store {
 	}
 }
 
-func (s *Store) Create(ctx context.Context, np product.NewProduct) (*product.Product, error) {
+func (s *Store) Create(ctx context.Context, nn []product.NewProduct) ([]*product.Product, error) {
 	const query = `
 	INSERT INTO products (name, description, price, category_id)
 	VALUES (:name, :description, :price, :category_id)
 	RETURNING id, name, description, price, category_id, created_at
 	`
 
-	var dest productDb
-	if err := dbsql.NamedQueryStruct(ctx, s.db, query, &np, &dest); err != nil {
+	var dest []productDb
+	if err := dbsql.NamedQuerySlice(ctx, s.db, query, nn, &dest); err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
 
-	return toProduct(dest), nil
+	return toProducts(dest), nil
 }
 
 func (s *Store) GetAll(ctx context.Context, filter product.Filter, pageNumber int, rowsPerPage int) ([]*product.Product, error) {
@@ -52,5 +52,5 @@ func (s *Store) GetAll(ctx context.Context, filter product.Filter, pageNumber in
 		return nil, fmt.Errorf("failed to get products in the data base: %w", err)
 	}
 
-	return toDbProducts(dbPrds), nil
+	return toProducts(dbPrds), nil
 }
