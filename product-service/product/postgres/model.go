@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lucasHSantiago/go-shop-ms/foundation/db"
+	"github.com/lucasHSantiago/go-shop-ms/foundation/dbsql"
 	"github.com/lucasHSantiago/go-shop-ms/product/product"
 )
 
@@ -46,7 +46,7 @@ type filterDb struct {
 	pageDb
 	Name       sql.NullString  `db:"name"`
 	Price      sql.NullFloat64 `db:"price"`
-	CategoryId db.NullUUID     `db:"category_id"`
+	CategoryId dbsql.NullUUID  `db:"category_id"`
 }
 
 func toFilterDb(f product.Filter, pageNumber int, rowsPerPage int) filterDb {
@@ -55,8 +55,8 @@ func toFilterDb(f product.Filter, pageNumber int, rowsPerPage int) filterDb {
 			Offset:      (pageNumber - 1) * rowsPerPage,
 			RowsPerPage: rowsPerPage,
 		},
-		Name:       db.StringToText(f.Name),
-		Price:      db.Float64ToFloat8(f.Price),
-		CategoryId: db.UUIDToUUID(f.CategoryId),
+		Name:       dbsql.StringToText(f.Name),
+		Price:      dbsql.Float64ToFloat8(f.Price),
+		CategoryId: dbsql.UUIDToUUID(f.CategoryId),
 	}
 }

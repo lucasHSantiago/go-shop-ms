@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/lucasHSantiago/go-shop-ms/foundation/db"
+	"github.com/lucasHSantiago/go-shop-ms/foundation/dbsql"
 	"github.com/lucasHSantiago/go-shop-ms/product/product"
 	"github.com/rs/zerolog/log"
 )
@@ -28,7 +28,7 @@ func (s *Store) Create(ctx context.Context, np product.NewProduct) (*product.Pro
 	`
 
 	var dest productDb
-	if err := db.NamedQueryStruct(ctx, s.db, query, &np, &dest); err != nil {
+	if err := dbsql.NamedQueryStruct(ctx, s.db, query, &np, &dest); err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
 
@@ -47,7 +47,7 @@ func (s *Store) GetAll(ctx context.Context, filter product.Filter, pageNumber in
 	`
 
 	var dbPrds []productDb
-	if err := db.NamedQuerySlice(ctx, s.db, query, toFilterDb(filter, pageNumber, rowsPerPage), &dbPrds); err != nil {
+	if err := dbsql.NamedQuerySlice(ctx, s.db, query, toFilterDb(filter, pageNumber, rowsPerPage), &dbPrds); err != nil {
 		log.Error().Err(err).Msg("failed to get products from the database")
 		return nil, fmt.Errorf("failed to get products in the data base: %w", err)
 	}

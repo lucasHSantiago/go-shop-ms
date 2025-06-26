@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lucasHSantiago/go-shop-ms/foundation/db"
+	"github.com/lucasHSantiago/go-shop-ms/foundation/dbsql"
 	"github.com/lucasHSantiago/go-shop-ms/product/config"
 	"github.com/lucasHSantiago/go-shop-ms/product/internal/api"
 	"github.com/lucasHSantiago/go-shop-ms/product/internal/http/handler"
@@ -51,7 +51,7 @@ func run(ctx context.Context) error {
 
 	log.Info().Str("host", cfg.DB.Host).Msg("initializing database support")
 
-	dbConn, err := db.Open(db.Config{
+	dbConn, err := dbsql.Open(dbsql.Config{
 		User:         cfg.DB.User,
 		Password:     cfg.DB.Password,
 		Host:         cfg.DB.Host,
@@ -68,7 +68,7 @@ func run(ctx context.Context) error {
 		dbConn.Close()
 	}()
 
-	if err := db.StatusCheck(ctx, dbConn); err != nil {
+	if err := dbsql.StatusCheck(ctx, dbConn); err != nil {
 		log.Error().Err(err).Msg("cannot connect to database")
 		return fmt.Errorf("cannot connect to database: %w", err)
 	}
