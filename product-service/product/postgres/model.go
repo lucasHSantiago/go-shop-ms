@@ -18,7 +18,7 @@ type productDb struct {
 	Created_at  time.Time `db:"created_at"`
 }
 
-func toProduct(prd productDb) *product.Product {
+func (prd productDb) toProduct() *product.Product {
 	return &product.Product{
 		ID:          prd.ID,
 		Name:        prd.Name,
@@ -32,7 +32,7 @@ func toProduct(prd productDb) *product.Product {
 func toProducts(pp []productDb) []*product.Product {
 	products := make([]*product.Product, len(pp))
 	for i, prd := range pp {
-		products[i] = toProduct(prd)
+		products[i] = prd.toProduct()
 	}
 	return products
 }
