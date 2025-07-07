@@ -2,7 +2,6 @@ package product
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,10 +19,10 @@ type Product struct {
 
 // NewProduct represents the data required to create a new product.
 type NewProduct struct {
-	Name        string
-	Description string
-	Price       float64
-	Category_id uuid.UUID
+	Name        string    `validate:"required"`
+	Description string    `validate:"required"`
+	Price       float64   `validate:"required,gt=0"`
+	CategoryId  uuid.UUID `validate:"required,uuid4"`
 }
 
 // Filter represents the criteria for filtering products.
@@ -32,8 +31,6 @@ type Filter struct {
 	Price      *float64
 	CategoryId *uuid.UUID
 }
-
-var ErrNotFound = errors.New("product not found")
 
 // UseCase defines the interface for product use cases.
 type UseCase interface {

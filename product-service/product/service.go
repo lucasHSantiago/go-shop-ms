@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lucasHSantiago/go-shop-ms/foundation/validate"
 	"github.com/rs/zerolog/log"
 )
 
@@ -23,6 +24,13 @@ func NewService(s Storer) *Service {
 }
 
 func (s *Service) Create(ctx context.Context, nn []NewProduct) ([]*Product, error) {
+	// Validate each new product
+	for i, np := range nn {
+		if err := validate.CheckWithIndex(np, i); err != nil {
+			return nil, err
+		}
+	}
+
 	// TODO: validate if category_id exists in the database
 
 	pp, err := s.storer.Create(ctx, nn)

@@ -8,7 +8,7 @@ import (
 	"github.com/lucasHSantiago/go-shop-ms/foundation/dbsql"
 	"github.com/lucasHSantiago/go-shop-ms/product/config"
 	"github.com/lucasHSantiago/go-shop-ms/product/internal/api"
-	"github.com/lucasHSantiago/go-shop-ms/product/internal/http/handler"
+	"github.com/lucasHSantiago/go-shop-ms/product/internal/grpc/server"
 	"github.com/lucasHSantiago/go-shop-ms/product/product"
 	"github.com/lucasHSantiago/go-shop-ms/product/product/postgres"
 	"github.com/rs/zerolog"
@@ -51,16 +51,17 @@ func run(ctx context.Context) error {
 
 	log.Info().Str("host", cfg.DB.Host).Msg("initializing database support")
 
-	dbConn, err := dbsql.Open(dbsql.Config{
-		User:         cfg.DB.User,
-		Password:     cfg.DB.Password,
-		Host:         cfg.DB.Host,
-		Name:         cfg.DB.Name,
-		MaxIdleConns: cfg.DB.MaxIdleConns,
-		MaxOpenConns: cfg.DB.MaxOpenConns,
-		DisableTLS:   cfg.DB.DisableTLS,
+	dbConn, err := dbsql.Open(ctx, dbsql.Config{
+		User:       cfg.DB.User,
+		Password:   cfg.DB.Password,
+		Host:       cfg.DB.Host,
+		Port:       cfg.DB.Port,
+		Name:       cfg.DB.Name,
+		Schema:     "public",
+		DisableTLS: cfg.DB.DisableTLS,
 	})
 	if err != nil {
+		log.Error().Err(err).Msg("connecting to db")
 		return fmt.Errorf("connecting to db: %w", err)
 	}
 	defer func() {
@@ -78,12 +79,12 @@ func run(ctx context.Context) error {
 
 	store := postgres.NewStore(dbConn)
 	service := product.NewService(store)
-	handler := handler.NewHandler(service)
+	server := server.NewProductServer(service)
 
 	// -------------------------------------------------------------------------
 	// Start the server.
 
-	err = api.Serve(ctx, handler, cfg)
+	err = api.Serve(ctx, server, cfg)
 	if err != nil {
 		log.Error().Err(err).Msg("cannot run server")
 		return fmt.Errorf("cannot run server: %w", err)

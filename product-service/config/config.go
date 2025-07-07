@@ -17,13 +17,12 @@ type Config struct {
 		APIHost         string        `conf:"default:0.0.0.0:5000"`
 	}
 	DB struct {
-		User         string `conf:"default:postgres"`
-		Password     string `conf:"default:admin,mask"`
-		Host         string `conf:"default:localhost:5432"`
-		Name         string `conf:"default:product"`
-		MaxIdleConns int    `conf:"default:2"`
-		MaxOpenConns int    `conf:"default:0"`
-		DisableTLS   bool   `conf:"default:true"`
+		User       string `conf:"default:postgres"`
+		Password   string `conf:"default:admin,mask"`
+		Host       string `conf:"default:localhost"`
+		Port       string `conf:"default:5432"`
+		Name       string `conf:"default:product"`
+		DisableTLS bool   `conf:"default:true"`
 	}
 }
 

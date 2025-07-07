@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/lucasHSantiago/go-shop-ms/product/internal/grpc/pb";
+
+service ProductService {
+  rpc Create(CreateProductRequest) returns (CreateProductResponse);
+  rpc GetAll(GetAllProductsRequest) returns (GetAllProductsResponse);
+}
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string category_id = 5;
+  string created_at = 6;
+}
+
+message NewProduct {
+  string name = 1;
+  string description = 2;
+  double price = 3;
+  string category_id = 4;
+}
+
+message CreateProductRequest {
+  repeated NewProduct new_product = 1;
+}
+
+message CreateProductResponse {
+  repeated Product product = 1;
+}
+
+message GetAllProductsRequest {
+  optional string name = 1;
+  optional double price = 2;
+  optional string category_id = 3;
+  optional int64 page_number = 4;
+  optional int64 page_rows = 5;
+}
+
+message GetAllProductsResponse {
+  repeated Product products = 1;
+}

@@ -63,3 +63,28 @@ func Check(val any) error {
 
 	return nil
 }
+
+func CheckWithIndex(val any, index int) error {
+	if err := validate.Struct(val); err != nil {
+
+		// Use a type assertion to get the real error value.
+		verrors, ok := err.(validator.ValidationErrors)
+		if !ok {
+			return err
+		}
+
+		var fields cerr.FieldIndexErrors
+		for _, verror := range verrors {
+			field := cerr.FieldIndexError{
+				Field: verror.Field(),
+				Index: index,
+				Err:   verror.Translate(translator),
+			}
+			fields = append(fields, field)
+		}
+
+		return fields
+	}
+
+	return nil
+}

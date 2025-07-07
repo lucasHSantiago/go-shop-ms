@@ -20,3 +20,13 @@ new_migration:
 .PHONY: run
 run:
 	go run ./...
+
+# ==============================================================================
+# Protoc
+
+.PHONY: protoc
+protoc:
+	rm -f internal/grpc/pb/*.go
+	protoc --proto_path=internal/grpc/proto --go_out=internal/grpc/pb --go_opt=paths=source_relative \
+	--go-grpc_out=internal/grpc/pb --go-grpc_opt=paths=source_relative \
+	internal/grpc/proto/product.proto
