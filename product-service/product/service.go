@@ -42,6 +42,14 @@ func (s *Service) Create(ctx context.Context, nn []NewProduct) ([]*Product, erro
 }
 
 func (s *Service) Get(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error) {
+	if pageNumber < 1 {
+		pageNumber = 1 // Default to the first page
+	}
+
+	if rowsPerPage < 1 {
+		rowsPerPage = 10 // Default value
+	}
+
 	pp, err := s.storer.Get(ctx, filter, pageNumber, rowsPerPage)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get products from the database")

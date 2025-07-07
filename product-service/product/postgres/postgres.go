@@ -4,31 +4,37 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/dbsql"
 	"github.com/lucasHSantiago/go-shop-ms/product/product"
 	"github.com/rs/zerolog/log"
 )
 
 type Store struct {
-	db sqlx.ExtContext
+	db *pgxpool.Pool
 }
 
-func NewStore(db *sqlx.DB) *Store {
+func NewStore(db *pgxpool.Pool) *Store {
 	return &Store{
 		db: db,
 	}
 }
 
 func (s *Store) Create(ctx context.Context, nn []product.NewProduct) ([]*product.Product, error) {
-	const query = `
-	INSERT INTO products (name, description, price, category_id)
-	VALUES (:name, :description, :price, :category_id)
-	RETURNING id, name, description, price, category_id, created_at
-	`
+	builder := sq.Insert("products").
+		Columns("name", "description", "price", "category_id").
+		Suffix("RETURNING id, name, description, price, category_id, created_at").
+		PlaceholderFormat(sq.Dollar)
 
-	var dest []productDb
-	if err := dbsql.NamedQuerySlice(ctx, s.db, query, nn, &dest); err != nil {
+	for _, p := range nn {
+		builder = builder.Values(p.Name, p.Description, p.Price, p.CategoryId)
+	}
+
+	query, args := builder.MustSql()
+	dest, err := dbsql.QuerySlice[productDb](ctx, s.db, query, args...)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to create products in the database")
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
 
@@ -36,21 +42,33 @@ func (s *Store) Create(ctx context.Context, nn []product.NewProduct) ([]*product
 }
 
 func (s *Store) Get(ctx context.Context, filter product.Filter, pageNumber int, rowsPerPage int) ([]*product.Product, error) {
-	const query string = `
-	SELECT id, name, description, price, category_id, created_at
-	FROM products
-	WHERE (name ILIKE COALESCE('%' || :name || '%', name))
-	  AND (price = COALESCE(:price, price))
-	  AND (category_id = COALESCE(:category_id, category_id))
-	ORDER BY created_at DESC
-	OFFSET :offset ROWS FETCH NEXT :rows_per_page ROWS ONLY
-	`
+	builder := sq.Select("id", "name", "description", "price", "category_id", "created_at").
+		From("products").
+		OrderBy("created_at DESC").
+		Offset(uint64((pageNumber - 1) * rowsPerPage)).
+		Limit(uint64(rowsPerPage)).
+		PlaceholderFormat(sq.Dollar)
 
-	var dbPrds []productDb
-	if err := dbsql.NamedQuerySlice(ctx, s.db, query, toFilterDb(filter, pageNumber, rowsPerPage), &dbPrds); err != nil {
-		log.Error().Err(err).Msg("failed to get products from the database")
-		return nil, fmt.Errorf("failed to get products in the data base: %w", err)
+	if filter.Name != nil {
+		builder = builder.Where(sq.ILike{"name": fmt.Sprintf("%%%s%%", *filter.Name)})
 	}
 
-	return toProducts(dbPrds), nil
+	if filter.Price != nil {
+		builder = builder.Where(sq.Eq{"price": *filter.Price})
+	}
+
+	if filter.CategoryId != nil {
+		builder = builder.Where(sq.Eq{"category_id": *filter.CategoryId})
+	}
+
+	query, args := builder.MustSql()
+	fmt.Printf("Query: %s, Args: %v\n", query, args)
+
+	res, err := dbsql.QuerySlice[productDb](ctx, s.db, query, args...)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to create products in the database")
+		return nil, fmt.Errorf("failed to create product: %w", err)
+	}
+
+	return toProducts(res), nil
 }

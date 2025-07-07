@@ -80,11 +80,11 @@ func toProductFilter(req *pb.GetAllProductsRequest) (*product.Filter, error) {
 	}
 
 	if req.CategoryId != nil {
-		var err error
-		*filter.CategoryId, err = uuid.Parse(req.GetCategoryId())
+		u, err := uuid.Parse(req.GetCategoryId())
 		if err != nil {
 			return nil, fmt.Errorf("category_id is not a UUID: %w", err)
 		}
+		filter.CategoryId = &u
 	}
 
 	return filter, nil

@@ -29,7 +29,7 @@ func (prd productDb) toProduct() *product.Product {
 	}
 }
 
-func toProducts(pp []productDb) []*product.Product {
+func toProducts(pp []*productDb) []*product.Product {
 	products := make([]*product.Product, len(pp))
 	for i, prd := range pp {
 		products[i] = prd.toProduct()
