@@ -99,7 +99,7 @@ func toProtoProduct(products []*product.Product) []*pb.Product {
 			Description: prd.Description,
 			Price:       prd.Price,
 			CategoryId:  prd.CategoryId.String(),
-			CreatedAt:   prd.Created_at.Format(time.RFC3339),
+			CreatedAt:   prd.CreatedAt.Format(time.RFC3339),
 		})
 	}
 	return protoProducts

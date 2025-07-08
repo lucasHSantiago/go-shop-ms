@@ -14,7 +14,7 @@ type Product struct {
 	Description string
 	Price       float64
 	CategoryId  uuid.UUID
-	Created_at  time.Time
+	CreatedAt   time.Time
 }
 
 // NewProduct represents the data required to create a new product.

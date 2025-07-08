@@ -25,7 +25,7 @@ func (prd productDb) toProduct() *product.Product {
 		Description: prd.Description,
 		Price:       prd.Price,
 		CategoryId:  prd.Category_id,
-		Created_at:  prd.Created_at,
+		CreatedAt:   prd.Created_at,
 	}
 }
 
