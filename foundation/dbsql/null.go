@@ -1,14 +1,14 @@
 package dbsql
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func StringToText(s *string) sql.NullString {
-	text := sql.NullString{
+func StringToText(s *string) pgtype.Text {
+	text := pgtype.Text{
 		Valid: s != nil,
 	}
 
@@ -19,8 +19,8 @@ func StringToText(s *string) sql.NullString {
 	return text
 }
 
-func TimeToTimestamptz(t *time.Time) sql.NullTime {
-	time := sql.NullTime{
+func TimeToTimestamptz(t *time.Time) pgtype.Timestamptz {
+	time := pgtype.Timestamptz{
 		Valid: t != nil,
 	}
 
@@ -31,32 +31,32 @@ func TimeToTimestamptz(t *time.Time) sql.NullTime {
 	return time
 }
 
-func BoolToBool(b *bool) sql.NullBool {
-	bool := sql.NullBool{
+func BoolToBool(b *bool) pgtype.Bool {
+	nb := pgtype.Bool{
 		Valid: b != nil,
 	}
 
-	if bool.Valid {
-		bool.Bool = *b
+	if nb.Valid {
+		nb.Bool = *b
 	}
 
-	return bool
+	return nb
 }
 
-func UUIDToUUID(u *uuid.UUID) NullUUID {
-	uuid := NullUUID{
+func UUIDToUUID(u *uuid.UUID) pgtype.UUID {
+	uuid := pgtype.UUID{
 		Valid: u != nil,
 	}
 
 	if uuid.Valid {
-		uuid.UUID = *u
+		uuid.Bytes = *u
 	}
 
 	return uuid
 }
 
-func Float64ToFloat8(f *float64) sql.NullFloat64 {
-	float := sql.NullFloat64{
+func Float64ToFloat8(f *float64) pgtype.Float8 {
+	float := pgtype.Float8{
 		Valid: f != nil,
 	}
 

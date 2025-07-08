@@ -1,10 +1,10 @@
 package postgres
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/lucasHSantiago/go-shop-ms/foundation/dbsql"
 	"github.com/lucasHSantiago/go-shop-ms/product/product"
 )
@@ -44,9 +44,9 @@ type pageDb struct {
 
 type filterDb struct {
 	pageDb
-	Name       sql.NullString  `db:"name"`
-	Price      sql.NullFloat64 `db:"price"`
-	CategoryId dbsql.NullUUID  `db:"category_id"`
+	Name       pgtype.Text   `db:"name"`
+	Price      pgtype.Float8 `db:"price"`
+	CategoryId pgtype.UUID   `db:"category_id"`
 }
 
 func toFilterDb(f product.Filter, pageNumber int, rowsPerPage int) filterDb {
