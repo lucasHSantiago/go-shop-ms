@@ -12,6 +12,19 @@ services:
     volumes:
       - database:/var/lib/postgresql/data
 
+  category-db:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=category
+    networks:
+      - go-shop
+    volumes:
+      - category-database:/var/lib/postgresql/data
+
   product:
     build: ../../product
     ports:
@@ -21,8 +34,18 @@ services:
     networks:
       - go-shop
 
+  category:
+    build: ../../category-service
+    ports:
+      - "5001:5000"
+    depends_on:
+      - category-db
+    networks:
+      - go-shop
+
 volumes:
   database: {}
+  category-database: {}
 
 networks:
   go-shop: {}
