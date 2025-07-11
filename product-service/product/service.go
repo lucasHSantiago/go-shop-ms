@@ -8,6 +8,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// -------------------------------------------------------------------------
+// Storer
+
 type Storer interface {
 	Create(ctx context.Context, np []NewProduct) ([]*Product, error)
 	Get(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error)
@@ -17,13 +20,16 @@ type Service struct {
 	storer Storer
 }
 
+// -------------------------------------------------------------------------
+// Service
+
 func NewService(s Storer) *Service {
 	return &Service{
 		storer: s,
 	}
 }
 
-func (s *Service) Create(ctx context.Context, nn []NewProduct) ([]*Product, error) {
+func (s Service) Create(ctx context.Context, nn []NewProduct) ([]*Product, error) {
 	// Validate each new product
 	for i, np := range nn {
 		if err := validate.CheckWithIndex(np, i); err != nil {
@@ -41,7 +47,7 @@ func (s *Service) Create(ctx context.Context, nn []NewProduct) ([]*Product, erro
 	return pp, nil
 }
 
-func (s *Service) Get(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error) {
+func (s Service) Get(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error) {
 	if pageNumber < 1 {
 		pageNumber = 1 // Default to the first page
 	}
