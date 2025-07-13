@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/lucasHSantiago/go-shop-ms/category/internal/grpc/pb";
+
+service CategoryService {
+  rpc Create(CreateCategoryRequest) returns (CreateCategoryResponse);
+  rpc GetAll(GetAllCategoriesRequest) returns (GetAllCategoriesResponse);
+}
+
+message Category {
+  string id = 1;
+  string name = 2;
+  string created_at = 3;
+}
+
+message NewCategory {
+  string name = 1;
+}
+
+message CreateCategoryRequest {
+  repeated NewCategory new_category = 1;
+}
+
+message CreateCategoryResponse {
+  repeated Category category = 1;
+}
+
+message GetAllCategoriesRequest {
+  optional string name = 1;
+  optional int64 page_number = 2;
+  optional int64 page_rows = 3;
+}
+
+message GetAllCategoriesResponse {
+  repeated Category categories = 1;
+}

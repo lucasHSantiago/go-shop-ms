@@ -17,6 +17,12 @@ type Service struct {
 	storer Storer
 }
 
+func NewService(s Storer) *Service {
+	return &Service{
+		storer: s,
+	}
+}
+
 func (s Service) Create(ctx context.Context, nn []NewCategory) ([]*Category, error) {
 	panic("not implemented") // TODO: Implement
 }
