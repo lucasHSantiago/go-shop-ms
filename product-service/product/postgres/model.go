@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/lucasHSantiago/go-shop-ms/foundation/dbsql"
 	"github.com/lucasHSantiago/go-shop-ms/product/product"
 )
 
@@ -35,28 +33,4 @@ func toProducts(pp []*productDb) []*product.Product {
 		products[i] = prd.toProduct()
 	}
 	return products
-}
-
-type pageDb struct {
-	Offset      int `db:"offset"`
-	RowsPerPage int `db:"rows_per_page"`
-}
-
-type filterDb struct {
-	pageDb
-	Name       pgtype.Text   `db:"name"`
-	Price      pgtype.Float8 `db:"price"`
-	CategoryId pgtype.UUID   `db:"category_id"`
-}
-
-func toFilterDb(f product.Filter, pageNumber int, rowsPerPage int) filterDb {
-	return filterDb{
-		pageDb: pageDb{
-			Offset:      (pageNumber - 1) * rowsPerPage,
-			RowsPerPage: rowsPerPage,
-		},
-		Name:       dbsql.StringToText(f.Name),
-		Price:      dbsql.Float64ToFloat8(f.Price),
-		CategoryId: dbsql.UUIDToUUID(f.CategoryId),
-	}
 }

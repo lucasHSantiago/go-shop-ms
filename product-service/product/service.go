@@ -16,12 +16,12 @@ type Storer interface {
 	Get(ctx context.Context, filter Filter, pageNumber int, rowsPerPage int) ([]*Product, error)
 }
 
+// -------------------------------------------------------------------------
+// Service
+
 type Service struct {
 	storer Storer
 }
-
-// -------------------------------------------------------------------------
-// Service
 
 func NewService(s Storer) *Service {
 	return &Service{
